@@ -148,13 +148,14 @@ def handleWLEvent(change):
 
 
 def checkEvent(change):
-    title = change['title']
+    if change['bot'] is False:
+        title = change['title']
 
-    if title == constants.WATCHLIST:
-        handleWatchlistUpdate(change)
+        if title == constants.WATCHLIST:
+            handleWatchlistUpdate(change)
 
-    if checkPageTitle(title):
-        handleWLEvent(change)
+        if checkPageTitle(title):
+            handleWLEvent(change)
 
 
 def stream():
