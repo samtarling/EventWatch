@@ -1,11 +1,12 @@
+import time
+import re
 from pywikibot.comms.eventstreams import EventStreams
 import pywikibot
 import mwparserfromhell
-import re
 import pymysql
 import constants
 import discordNotify
-import time
+
 
 watchedPages = []
 watchedPageRegex = []
@@ -21,7 +22,7 @@ def getUserScore(user: str):
             database=constants.DB_NAME
         )
         cursor = db.cursor()
-        sql = "SELECT score FROM user_score WHERE user_name = '%s'" % (user)
+        sql = f"SELECT score FROM user_score WHERE user_name = '{user}'"
         if cursor.execute(sql):
             for item in cursor.fetchall():
                 db.close()
@@ -44,7 +45,7 @@ def updateScore(user: str):
         )
         cursor = db.cursor()
         datetime = time.strftime('%Y-%m-%d %H:%M:%S')
-        sql = f"INSERT INTO user_score (user_name, last_update) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE last_update = '%s', score=score-1" % (user, datetime, datetime)
+        sql = f"INSERT INTO user_score (user_name, last_update) VALUES ('{user}','{datetime}') ON DUPLICATE KEY UPDATE last_update = '{datetime}', score=score-1"
         try:
             cursor.execute(sql)
             db.commit()
@@ -102,7 +103,7 @@ def readWatchList(title: str):
         elif section_title == '== Regex ==':
             for link in section.filter_wikilinks():
                 addPageRegexWatch(link.title)
-    
+
     print(watchedPages)
     print(watchedPageRegex)
     print(f"Watchlists updated from [{constants.LINK_URL}{constants.WATCHLIST}]")
