@@ -12,6 +12,7 @@ watchedPageRegex = []
 
 
 def getUserScore(user: str):
+    '''Get a user's score'''
     if constants.SCORING:
         db = pymysql.connect(
             host=constants.DB_HOST,
@@ -33,6 +34,7 @@ def getUserScore(user: str):
 
 
 def updateScore(user: str):
+    '''Updates a user's score in the database'''
     if constants.SCORING:
         db = pymysql.connect(
             host=constants.DB_HOST,
@@ -42,7 +44,7 @@ def updateScore(user: str):
         )
         cursor = db.cursor()
         datetime = time.strftime('%Y-%m-%d %H:%M:%S')
-        sql = "INSERT INTO user_score (user_name, last_update) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE last_update = '%s', score=score-1" % (user, datetime, datetime)
+        sql = f"INSERT INTO user_score (user_name, last_update) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE last_update = '%s', score=score-1" % (user, datetime, datetime)
         try:
             cursor.execute(sql)
             db.commit()
@@ -52,6 +54,7 @@ def updateScore(user: str):
 
 
 def checkPageTitle(title: str):
+    '''Checks if a given title is in the watchlist'''
     global watchedPages
     global watchedPageRegex
     if title in watchedPages:
@@ -65,24 +68,28 @@ def checkPageTitle(title: str):
 
 
 def addPageWatch(title: str):
+    '''Add a given title to the watchlist'''
     global watchedPages
     if title not in watchedPages:
         watchedPages.append(title)
 
 
 def addPageRegexWatch(title: str):
+    '''Add a given title regex to the watchlist'''
     global watchedPageRegex
     if title not in watchedPageRegex:
         watchedPageRegex.append(title)
 
 
 def getPage(title: str):
+    '''Get a Page object'''
     site = pywikibot.Site(constants.SITE)
     page = pywikibot.Page(site, title)
     return page
 
 
 def readWatchList(title: str):
+    '''Read the watchlist data from a given Wiki page'''
     page = getPage(title)
     text = page.get()
     wikitext = mwparserfromhell.parse(text)
@@ -104,6 +111,7 @@ def readWatchList(title: str):
 
 
 def createDiffLink(change: str, short: bool):
+    '''Generate a diff link'''
     revision = change['revision']['new']
     if short:
         return f"http://enwp.org/Special:Diff/{revision}"
@@ -112,6 +120,7 @@ def createDiffLink(change: str, short: bool):
 
 
 def createLogMessage(change, code: str):
+    '''Create and display a log message'''
     diffLink = createDiffLink(change, True)
     user = change['user']
     comment = change['comment']
@@ -124,7 +133,8 @@ def createLogMessage(change, code: str):
     return logMessage
 
 
-def handleWatchlistUpdate(change):
+def handleWatchlistUpdate():
+    '''Handle the watchlist page being edited'''
     global watchedPages
     global watchedPageRegex
 
@@ -138,6 +148,7 @@ def handleWatchlistUpdate(change):
 
 
 def handleWLEvent(change):
+    '''Handle a watchlist match'''
     user = change['user']
     if constants.SCORING:
         updateScore(user)
@@ -148,17 +159,19 @@ def handleWLEvent(change):
 
 
 def checkEvent(change):
+    '''Check a change for any events to fire'''
     if change['bot'] is False:
         title = change['title']
 
         if title == constants.WATCHLIST:
-            handleWatchlistUpdate(change)
+            handleWatchlistUpdate()
 
         if checkPageTitle(title):
             handleWLEvent(change)
 
 
-def stream():
+def streamEdits():
+    '''Stream edits'''
     stream = EventStreams(
         streams=[
             'recentchange',
@@ -176,6 +189,7 @@ def stream():
 
 
 def main():
+    '''Set up EventWatch and stream edits'''
     global watchedPages
     global watchedPageRegex
 
@@ -185,19 +199,19 @@ def main():
 
     if constants.SCORING:
         if constants.DISCORD:
-            discordNotify.sendPlain(f"[scoring mode: ON]")
-        print(f"[scoring mode: ON]")
+            discordNotify.sendPlain('[scoring mode: ON]')
+        print('[scoring mode: ON]')
     else:
         if constants.DISCORD:
-            discordNotify.sendPlain(f"[scoring mode: OFF]")
-        print(f"[scoring mode: OFF]")
+            discordNotify.sendPlain('[scoring mode: OFF]')
+        print('[scoring mode: OFF]')
 
     readWatchList(constants.WATCHLIST)
 
     print('Starting streaming...')
     if constants.DISCORD:
         discordNotify.sendPlain('Starting streaming...')
-    stream()
+    streamEdits()
 
 
 if __name__ == "__main__":
