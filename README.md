@@ -11,10 +11,12 @@ The full URI for the Wikimedia site, excluding the `https`
 The page name for the watchlist, set up as detailed below
 
 ### Required for `Discord`
-#### `DB_HOST`
-Database host
+#### `WEBHOOK`
+Discord webhook URL
 
 ### Required for `Scoring`
+#### `DB_HOST`
+Database host
 #### `DB_USER`
 Database username
 #### `DB_PASS`
@@ -65,6 +67,7 @@ At the moment, the watchlist page is pretty specific - it **must** be set up as 
 ## TODO
 
 - [ ] Add docstrings/blocks, type hints etc to functions, you scrub.
+- [ ] Lots of lines are too damn long!
 - [ ] Basically *get good* at Python.
 - [ ] Move away from using a webhook and create a bot.
 - [ ] Finish user scoring
